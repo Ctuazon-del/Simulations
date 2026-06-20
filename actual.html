@@ -1,0 +1,1815 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flour Impact Lab</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --ink: #17323a;
+      --muted: #5f7478;
+      --panel: rgba(255, 252, 241, 0.94);
+      --accent: #087f8c;
+      --accent-dark: #075c66;
+      --sun: #f2a541;
+      --sand: #f7e8c9;
+      --line: #17444c;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 14px;
+      background:
+        radial-gradient(circle at 12% 16%, rgba(242, 165, 65, 0.32) 0 110px, transparent 112px),
+        radial-gradient(circle at 92% 10%, rgba(8, 127, 140, 0.22) 0 150px, transparent 152px),
+        linear-gradient(135deg, #f8f0dc, #eaf6f4 52%, #f9f3e6);
+      color: var(--ink);
+      font-family: "Trebuchet MS", "Lucida Sans Unicode", sans-serif;
+    }
+
+    .mode-tabs {
+      position: fixed;
+      top: 21px;
+      left: 23px;
+      z-index: 5;
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .mode-tab {
+      display: inline-flex;
+      align-items: center;
+      min-height: 48px;
+      padding: 12px 16px;
+      border: 0;
+      border-radius: 999px;
+      background: rgba(248, 253, 251, 0.9);
+      box-shadow: 0 8px 0 rgba(87, 98, 85, 0.18);
+      color: var(--accent-dark);
+      font: inherit;
+      font-size: 1rem;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform 160ms ease, box-shadow 160ms ease;
+    }
+
+    .mode-tab.active {
+      background: linear-gradient(135deg, var(--sun), #f06d3a);
+      box-shadow: 0 8px 0 rgba(157, 77, 26, 0.22);
+      color: #ffffff;
+    }
+
+    .mode-tab:hover {
+      transform: translateY(-2px);
+    }
+
+    .pdf-button {
+      position: fixed;
+      top: 21px;
+      right: 23px;
+      z-index: 5;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 12px 16px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--accent), #11a7a7);
+      box-shadow: 0 8px 0 rgba(7, 92, 102, 0.22);
+      color: #ffffff;
+      font: inherit;
+      font-size: 1rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: transform 160ms ease, box-shadow 160ms ease;
+    }
+
+    .pdf-button:hover {
+      transform: translateY(-2px);
+    }
+
+    .activity-panel {
+      width: min(990px, calc(100% - 32px));
+      min-height: auto;
+      border: 3px solid var(--line);
+      border-radius: 28px;
+      padding: 10px 24px 18px;
+      text-align: center;
+      background: var(--panel);
+      box-shadow: 0 22px 60px rgba(23, 50, 58, 0.18);
+    }
+
+    h1 {
+      margin: 0 0 18px;
+      color: var(--accent-dark);
+      font-size: clamp(2rem, 4.4vw, 2.7rem);
+      line-height: 1.1;
+      letter-spacing: -0.04em;
+    }
+
+    .instructions {
+      margin: 0 auto 24px;
+      max-width: 780px;
+      color: var(--muted);
+      font-size: 1.05rem;
+      line-height: 1.35;
+    }
+
+    .instructions span {
+      color: var(--sun);
+      font-weight: 700;
+    }
+
+    .content {
+      display: grid;
+      grid-template-columns: 260px 1fr 180px;
+      gap: 30px;
+      align-items: start;
+    }
+
+    .sidebar {
+      padding-top: 26px;
+      text-align: left;
+    }
+
+    .button {
+      padding: 10px 18px;
+      border: 0;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--sun), #f06d3a);
+      box-shadow: 0 8px 0 rgba(157, 77, 26, 0.22);
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 160ms ease, box-shadow 160ms ease;
+    }
+
+    .button:hover {
+      transform: translateY(-2px);
+    }
+
+    .drop-button {
+      display: block;
+      margin: 0 auto 38px;
+    }
+
+    .conditions-title {
+      margin: 0 0 22px;
+      color: var(--accent-dark);
+      font-size: 1.45rem;
+      font-weight: 700;
+    }
+
+    .condition {
+      margin: 0 0 26px 10px;
+      font-size: 1.35rem;
+      line-height: 1.05;
+    }
+
+    .condition strong {
+      display: block;
+      font-weight: 700;
+    }
+
+    .condition span {
+      display: block;
+      margin-left: 12px;
+      color: var(--muted);
+    }
+
+    .change-button {
+      margin-left: 18px;
+      font-size: 1.12rem;
+    }
+
+    .view-title {
+      margin: 0 0 16px;
+      color: var(--accent-dark);
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
+
+    .zoom-in {
+      min-height: 410px;
+    }
+
+    .drop-window {
+      position: relative;
+      overflow: hidden;
+      height: 300px;
+      border: 3px solid var(--line);
+      border-radius: 18px;
+      background:
+        linear-gradient(90deg, rgba(8, 127, 140, 0.08) 1px, transparent 1px),
+        linear-gradient(#ffffff, #f6fbf9);
+      background-size: 34px 34px, auto;
+      box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.64);
+    }
+
+    .flour {
+      position: absolute;
+      left: 50%;
+      bottom: 18px;
+      z-index: 2;
+      width: 190px;
+      height: 58px;
+      transform: translateX(-50%) perspective(140px) rotateX(52deg);
+      border: 3px solid var(--line);
+      border-radius: 10px;
+      background: linear-gradient(145deg, #9c9c9c, #c8c8c8 45%, #777777);
+      box-shadow: 0 12px 18px rgba(0, 0, 0, 0.18);
+    }
+
+    .flour::before {
+      content: "";
+      position: absolute;
+      left: 20px;
+      right: 20px;
+      top: 5px;
+      height: 34px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 24% 48%, rgba(218, 206, 176, 0.75) 0 3px, transparent 4px),
+        radial-gradient(circle at 58% 32%, rgba(218, 206, 176, 0.65) 0 2px, transparent 3px),
+        radial-gradient(circle at 78% 62%, rgba(218, 206, 176, 0.7) 0 2px, transparent 3px),
+        radial-gradient(ellipse at center, #fffdf4 0 42%, #eee6d2 72%, #d4c4a2 100%);
+      border: 2px solid #efe4c8;
+      box-shadow: inset 0 5px 10px rgba(255, 255, 255, 0.7);
+    }
+
+    .flour.impact::before {
+      animation: flour-squash 520ms ease-out;
+    }
+
+    .flour-puff {
+      position: absolute;
+      left: 50%;
+      bottom: 74px;
+      z-index: 4;
+      width: 150px;
+      height: 46px;
+      transform: translateX(-50%);
+      pointer-events: none;
+      opacity: 0;
+    }
+
+    .flour-puff::before,
+    .flour-puff::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 18% 66%, rgba(255, 252, 238, 0.95) 0 8px, transparent 9px),
+        radial-gradient(circle at 38% 38%, rgba(244, 236, 214, 0.9) 0 7px, transparent 8px),
+        radial-gradient(circle at 58% 58%, rgba(255, 252, 238, 0.9) 0 9px, transparent 10px),
+        radial-gradient(circle at 78% 42%, rgba(239, 229, 205, 0.86) 0 6px, transparent 7px);
+      filter: blur(0.4px);
+    }
+
+    .flour-puff::after {
+      transform: scaleX(0.76) translateY(8px);
+      opacity: 0.72;
+    }
+
+    .flour-puff.active {
+      animation: flour-puff 620ms ease-out forwards;
+    }
+
+    .flour-label {
+      position: absolute;
+      left: 50%;
+      bottom: -30px;
+      transform: translateX(-50%);
+      width: 160px;
+      color: #6f5b36;
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    @keyframes flour-squash {
+      0% {
+        transform: scale(1, 1);
+      }
+
+      35% {
+        transform: scale(1.13, 0.72) translateY(8px);
+      }
+
+      100% {
+        transform: scale(1, 1);
+      }
+    }
+
+    @keyframes flour-puff {
+      0% {
+        opacity: 0;
+        transform: translateX(-50%) scale(0.55) translateY(16px);
+      }
+
+      30% {
+        opacity: 1;
+      }
+
+      100% {
+        opacity: 0;
+        transform: translateX(-50%) scale(1.35) translateY(-18px);
+      }
+    }
+
+    .object-preview {
+      position: absolute;
+      top: -110px;
+      left: 50%;
+      z-index: 3;
+      transform: translateX(-50%);
+      display: none;
+      place-items: center;
+      min-width: 88px;
+      min-height: 64px;
+      font-weight: 700;
+      filter: drop-shadow(0 8px 8px rgba(0, 0, 0, 0.22));
+    }
+
+    .object-preview.show {
+      display: grid;
+    }
+
+    .object-preview.ball {
+      width: 62px;
+      height: 62px;
+      min-width: 62px;
+      min-height: 62px;
+      border: 2px solid #d6d1bd;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 30% 25%, #ffffff 0 12px, transparent 13px),
+        radial-gradient(circle at 65% 70%, #d8d1b6 0 4px, transparent 5px),
+        radial-gradient(circle at 38% 42%, #fffdf0 0 42%, #eee7cc 70%, #cfc6a4 100%);
+      color: transparent;
+    }
+
+    .object-preview.ball::after {
+      content: "";
+      position: absolute;
+      width: 42px;
+      height: 13px;
+      border-top: 2px solid rgba(196, 184, 140, 0.7);
+      border-radius: 50%;
+      transform: rotate(-22deg);
+    }
+
+    .object-preview.potato {
+      width: 92px;
+      height: 62px;
+      border: 3px solid #6b3f1d;
+      border-radius: 58% 42% 50% 44% / 50% 45% 55% 50%;
+      background:
+        radial-gradient(circle at 24% 35%, #6a3b1c 0 3px, transparent 4px),
+        radial-gradient(circle at 42% 68%, #70401e 0 2px, transparent 3px),
+        radial-gradient(circle at 72% 38%, #6a3b1c 0 3px, transparent 4px),
+        radial-gradient(circle at 58% 52%, #d99b52 0 10px, transparent 11px),
+        linear-gradient(135deg, #c8893f, #9e5f28 65%, #7b451f);
+      color: transparent;
+      transform: translateX(-50%) rotate(-8deg);
+    }
+
+    .object-preview.potato::before,
+    .object-preview.potato::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(85, 45, 20, 0.42);
+    }
+
+    .object-preview.potato::before {
+      width: 8px;
+      height: 5px;
+      left: 18px;
+      top: 18px;
+    }
+
+    .object-preview.potato::after {
+      width: 10px;
+      height: 6px;
+      right: 20px;
+      bottom: 16px;
+    }
+
+    .object-preview.can {
+      width: 68px;
+      height: 92px;
+      border: 3px solid #111111;
+      border-radius: 12px 12px 9px 9px;
+      background:
+        linear-gradient(#ececec 0 10px, transparent 10px 82px, #a8a8a8 82px),
+        linear-gradient(90deg, #8b8b8b, #f8f8f8 26%, #d62828 27% 72%, #ffffff 73%, #777777);
+      color: #ffffff;
+      font-size: 0.82rem;
+      letter-spacing: 0.04em;
+      text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.45);
+    }
+
+    .object-preview.can::before,
+    .object-preview.can::after {
+      content: "";
+      position: absolute;
+      left: 8px;
+      right: 8px;
+      height: 8px;
+      border: 2px solid rgba(0, 0, 0, 0.65);
+      border-radius: 50%;
+      background: linear-gradient(90deg, #b9b9b9, #f7f7f7, #969696);
+    }
+
+    .object-preview.can::before {
+      top: -5px;
+    }
+
+    .object-preview.can::after {
+      bottom: -5px;
+    }
+
+    .zoom-out {
+      position: relative;
+    }
+
+    .height-scale {
+      position: relative;
+      height: 410px;
+      width: 112px;
+      margin: 0 auto;
+      border: 4px solid var(--line);
+      border-top-width: 3px;
+      border-radius: 14px;
+      background: linear-gradient(#ffffff, #f6fbf9);
+      box-shadow: inset 0 0 0 4px rgba(8, 127, 140, 0.06);
+    }
+
+    .scale-mark {
+      position: absolute;
+      left: -10px;
+      width: 128px;
+      height: 4px;
+      background: var(--accent);
+    }
+
+    .scale-mark::before {
+      content: attr(data-label);
+      position: absolute;
+      left: -58px;
+      top: -11px;
+      width: 50px;
+      text-align: right;
+      color: var(--ink);
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .mark-060 {
+      top: 0;
+    }
+
+    .mark-040 {
+      top: 135px;
+    }
+
+    .mark-020 {
+      top: 270px;
+    }
+
+    .height-pointer {
+      position: absolute;
+      right: -34px;
+      width: 0;
+      height: 0;
+      border-top: 8px solid transparent;
+      border-bottom: 8px solid transparent;
+      border-right: 24px solid var(--sun);
+      transform: translateY(-6px);
+    }
+
+    .pointer-060 {
+      top: 0;
+    }
+
+    .pointer-040 {
+      top: 135px;
+    }
+
+    .pointer-020 {
+      top: 270px;
+    }
+
+    .scale-object-track {
+      position: absolute;
+      left: 50%;
+      top: 270px;
+      transform: translateX(-50%);
+      z-index: 2;
+      filter: drop-shadow(0 3px 3px rgba(0, 0, 0, 0.25));
+    }
+
+    .scale-object {
+      transform: translateX(-50%);
+    }
+
+    .scale-object.ball {
+      width: 18px;
+      height: 18px;
+      border: 1px solid #cfc5a3;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 25%, #ffffff 0 4px, #f2ead0 55%, #cfc5a3 100%);
+    }
+
+    .scale-object.potato {
+      width: 28px;
+      height: 19px;
+      border: 1px solid #6b3f1d;
+      border-radius: 58% 42% 50% 44%;
+      background:
+        radial-gradient(circle at 30% 35%, #6a3b1c 0 1px, transparent 2px),
+        linear-gradient(135deg, #c8893f, #8a4d22);
+      transform: translateX(-50%) rotate(-8deg);
+    }
+
+    .scale-object.can {
+      width: 18px;
+      height: 27px;
+      border: 1px solid #111111;
+      border-radius: 4px;
+      background: linear-gradient(90deg, #a8a8a8, #f7f7f7 35%, #d62828 36% 74%, #777777);
+    }
+
+    .report-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      padding: 12px;
+      background: rgba(23, 50, 58, 0.28);
+      backdrop-filter: blur(5px);
+      z-index: 10;
+      overflow-y: hidden;
+    }
+
+    .report-overlay.show {
+      display: flex;
+    }
+
+    .report-card {
+      width: min(760px, 100%);
+      max-height: calc(100vh - 24px);
+      min-height: auto;
+      padding: 10px 28px 22px;
+      border: 3px solid var(--line);
+      border-radius: 24px;
+      background: linear-gradient(145deg, #fffaf0, #e9f6f3);
+      box-shadow: 0 26px 70px rgba(23, 50, 58, 0.28);
+      text-align: center;
+      margin: 0;
+    }
+
+    .report-card h2 {
+      margin: 0 0 14px;
+      color: var(--accent-dark);
+      font-size: 1.65rem;
+    }
+
+    .report-line,
+    .formula-line {
+      margin: 0;
+      font-size: 1.16rem;
+      font-weight: 700;
+      line-height: 1.18;
+    }
+
+    .report-line span,
+    .formula-line span,
+    .answer {
+      color: var(--sun);
+    }
+
+    .report-description {
+      max-width: 680px;
+      margin: 14px auto 0;
+      font-size: 1.02rem;
+      font-weight: 700;
+      line-height: 1.24;
+    }
+
+    .report-description span {
+      color: var(--accent);
+    }
+
+    .formula-block {
+      margin: 14px 0 16px;
+    }
+
+    .answer-line {
+      margin: 16px 0 8px;
+      font-size: 1.28rem;
+      font-weight: 700;
+    }
+
+    .crater-line {
+      margin: 0 0 14px;
+      font-size: 1.12rem;
+      font-weight: 700;
+      line-height: 1.22;
+    }
+
+    .crater-line span {
+      color: var(--sun);
+    }
+
+    .crater-preview {
+      --crater-size: 86px;
+      --slap-width: 188px;
+      --slap-height: 148px;
+      --crater-depth: 0.52;
+      --crater-rotation: 0deg;
+      width: min(520px, 100%);
+      margin: 0 auto 30px;
+      padding: 18px;
+      border: 2px solid rgba(23, 68, 76, 0.22);
+      border-radius: 16px;
+      background:
+        radial-gradient(circle at 14% 18%, rgba(255, 255, 248, 0.8) 0 4px, transparent 5px),
+        radial-gradient(circle at 18% 22%, rgba(214, 199, 164, 0.42) 0 2px, transparent 3px),
+        radial-gradient(circle at 78% 34%, rgba(197, 178, 136, 0.34) 0 2px, transparent 3px),
+        radial-gradient(circle at 42% 78%, rgba(220, 208, 177, 0.48) 0 2px, transparent 3px),
+        radial-gradient(circle at 62% 64%, rgba(186, 166, 124, 0.25) 0 1px, transparent 2px),
+        linear-gradient(145deg, #fffdf4, #eee4ca);
+      box-shadow:
+        inset 0 8px 18px rgba(123, 99, 56, 0.12),
+        inset 0 -10px 26px rgba(172, 147, 96, 0.12);
+    }
+
+    .report-card .crater-preview {
+      width: min(360px, 100%);
+      margin-bottom: 16px;
+      padding: 12px;
+    }
+
+    .report-card .crater-preview .crater-surface {
+      height: 118px;
+    }
+
+    .crater-preview-title {
+      margin: 0 0 8px;
+      color: var(--accent-dark);
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    .crater-surface {
+      position: relative;
+      height: 180px;
+      border-radius: 12px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 50% 52%, rgba(115, 86, 50, 0.11) 0 12%, transparent 36%),
+        radial-gradient(circle at 51% 49%, rgba(255, 255, 248, 0.88) 0 4px, transparent 5px),
+        radial-gradient(circle at 43% 46%, rgba(255, 255, 250, 0.68) 0 3px, transparent 4px),
+        radial-gradient(circle at 58% 60%, rgba(168, 139, 86, 0.28) 0 2px, transparent 3px),
+        radial-gradient(circle at 22% 28%, rgba(184, 164, 119, 0.24) 0 2px, transparent 3px),
+        radial-gradient(circle at 68% 20%, rgba(214, 199, 164, 0.5) 0 3px, transparent 4px),
+        radial-gradient(circle at 82% 72%, rgba(182, 158, 108, 0.22) 0 2px, transparent 3px),
+        radial-gradient(circle at 36% 66%, rgba(255, 255, 250, 0.75) 0 3px, transparent 4px),
+        repeating-linear-gradient(18deg, rgba(160, 136, 88, 0.05) 0 1px, transparent 1px 8px),
+        linear-gradient(#fffaf0, #eadfc4);
+      box-shadow:
+        inset 0 14px 22px rgba(255, 255, 255, 0.44),
+        inset 0 -18px 32px rgba(157, 132, 84, 0.18);
+    }
+
+    .flour-slap {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: var(--slap-width);
+      height: var(--slap-height);
+      transform: translate(-50%, -50%) rotate(var(--crater-rotation));
+      border-radius: 49% 51% 46% 54% / 48% 44% 56% 52%;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse at 50% 50%, transparent 0 34%, rgba(255, 255, 246, 0.5) 35% 49%, transparent 68%),
+        radial-gradient(ellipse at 28% 44%, rgba(255, 255, 247, 0.9) 0 10%, rgba(243, 232, 202, 0.55) 11% 18%, transparent 31%),
+        radial-gradient(ellipse at 72% 38%, rgba(255, 255, 247, 0.86) 0 8%, rgba(238, 226, 193, 0.52) 9% 16%, transparent 29%),
+        radial-gradient(ellipse at 36% 76%, rgba(255, 255, 246, 0.72) 0 7%, rgba(226, 209, 170, 0.46) 8% 15%, transparent 27%),
+        radial-gradient(ellipse at 76% 68%, rgba(242, 230, 198, 0.72) 0 6%, transparent 21%),
+        radial-gradient(circle at 16% 52%, rgba(255, 255, 247, 0.95) 0 5px, transparent 7px),
+        radial-gradient(circle at 24% 27%, rgba(241, 232, 204, 0.84) 0 4px, transparent 6px),
+        radial-gradient(circle at 78% 23%, rgba(255, 255, 247, 0.9) 0 5px, transparent 7px),
+        radial-gradient(circle at 88% 56%, rgba(238, 226, 193, 0.82) 0 4px, transparent 6px),
+        radial-gradient(circle at 34% 88%, rgba(255, 255, 246, 0.82) 0 4px, transparent 6px),
+        radial-gradient(circle at 62% 84%, rgba(224, 207, 167, 0.68) 0 3px, transparent 5px);
+      filter: blur(0.35px);
+      opacity: 0.95;
+    }
+
+    .flour-slap::before,
+    .flour-slap::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background:
+        radial-gradient(ellipse at 20% 48%, rgba(255, 255, 248, 0.8) 0 8%, transparent 20%),
+        radial-gradient(ellipse at 80% 48%, rgba(255, 255, 248, 0.74) 0 7%, transparent 19%),
+        radial-gradient(ellipse at 50% 15%, rgba(244, 233, 202, 0.62) 0 6%, transparent 17%),
+        radial-gradient(ellipse at 52% 86%, rgba(244, 233, 202, 0.58) 0 7%, transparent 18%),
+        radial-gradient(circle at 30% 22%, rgba(255, 255, 248, 0.82) 0 3px, transparent 5px),
+        radial-gradient(circle at 70% 20%, rgba(230, 214, 176, 0.76) 0 3px, transparent 5px),
+        radial-gradient(circle at 19% 70%, rgba(238, 224, 190, 0.74) 0 3px, transparent 5px),
+        radial-gradient(circle at 84% 74%, rgba(255, 255, 247, 0.78) 0 3px, transparent 5px);
+    }
+
+    .flour-slap::after {
+      inset: 8% 4%;
+      transform: rotate(27deg);
+      opacity: 0.72;
+      filter: blur(1.2px);
+      background:
+        radial-gradient(ellipse at 24% 36%, rgba(255, 255, 246, 0.62) 0 12%, transparent 28%),
+        radial-gradient(ellipse at 76% 58%, rgba(255, 255, 246, 0.56) 0 11%, transparent 27%),
+        radial-gradient(ellipse at 48% 22%, rgba(232, 216, 178, 0.42) 0 7%, transparent 20%),
+        radial-gradient(ellipse at 46% 78%, rgba(232, 216, 178, 0.38) 0 8%, transparent 21%);
+    }
+
+    .crater-shape {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: var(--crater-size);
+      height: calc(var(--crater-size) * 0.72);
+      transform: translate(-50%, -50%) rotate(var(--crater-rotation));
+      border-radius: 48% 52% 50% 46% / 47% 44% 56% 53%;
+      background:
+        radial-gradient(ellipse at 46% 56%, rgba(55, 39, 25, 0.52) 0 15%, rgba(92, 67, 40, 0.4) 27%, transparent 47%),
+        radial-gradient(ellipse at 35% 36%, rgba(255, 255, 245, 0.74) 0 11%, transparent 25%),
+        radial-gradient(ellipse at 68% 68%, rgba(95, 69, 39, 0.32) 0 10%, transparent 26%),
+        radial-gradient(ellipse at center, rgba(106, 78, 45, 0.42) 0 28%, rgba(218, 204, 169, 0.86) 48%, rgba(255, 252, 239, 0.92) 64%, transparent 73%);
+      box-shadow:
+        inset 8px 13px 18px rgba(53, 38, 24, 0.32),
+        inset -9px -12px 18px rgba(255, 255, 248, 0.62),
+        0 1px 5px rgba(97, 77, 44, 0.16);
+    }
+
+    .crater-shape::before,
+    .crater-shape::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .crater-shape::before {
+      inset: -12% -10% -8%;
+      background:
+        radial-gradient(ellipse at 24% 40%, rgba(255, 255, 245, 0.82) 0 8%, transparent 19%),
+        radial-gradient(ellipse at 72% 26%, rgba(255, 250, 229, 0.62) 0 5%, transparent 13%),
+        radial-gradient(ellipse at 78% 62%, rgba(155, 123, 75, 0.3) 0 7%, transparent 18%),
+        radial-gradient(ellipse at 42% 80%, rgba(188, 160, 101, 0.24) 0 5%, transparent 14%);
+      border: 4px solid rgba(239, 231, 205, 0.88);
+      box-shadow:
+        0 0 0 2px rgba(180, 155, 105, 0.16),
+        0 8px 12px rgba(112, 88, 47, 0.1);
+    }
+
+    .crater-shape::after {
+      left: 29%;
+      top: 30%;
+      width: 42%;
+      height: 42%;
+      background:
+        radial-gradient(ellipse at center, rgba(53, 37, 24, 0.5), rgba(120, 91, 55, 0.2) 58%, transparent 72%);
+      filter: blur(1.4px);
+    }
+
+    .crater-shape.ball {
+      height: var(--crater-size);
+      border-radius: 48% 52% 50% 46% / 47% 44% 56% 53%;
+    }
+
+    .crater-shape.potato {
+      height: calc(var(--crater-size) * 0.62);
+      border-radius: 61% 39% 52% 44% / 48% 42% 58% 52%;
+    }
+
+    .crater-shape.can {
+      width: calc(var(--crater-size) * 0.78);
+      height: calc(var(--crater-size) * 1.08);
+      border-radius: 37% 43% 39% 35% / 46% 42% 48% 44%;
+    }
+
+    .crater-preview.can .flour-slap {
+      width: var(--slap-width);
+      height: var(--slap-height);
+      background:
+        radial-gradient(ellipse at 50% 50%, transparent 0 28%, rgba(255, 255, 246, 0.62) 29% 48%, transparent 72%),
+        radial-gradient(ellipse at 24% 44%, rgba(255, 255, 247, 0.94) 0 12%, rgba(243, 232, 202, 0.6) 13% 21%, transparent 34%),
+        radial-gradient(ellipse at 76% 42%, rgba(255, 255, 247, 0.9) 0 11%, rgba(238, 226, 193, 0.56) 12% 20%, transparent 33%),
+        radial-gradient(ellipse at 38% 82%, rgba(255, 255, 246, 0.78) 0 8%, rgba(226, 209, 170, 0.5) 9% 17%, transparent 30%),
+        radial-gradient(ellipse at 72% 78%, rgba(242, 230, 198, 0.78) 0 8%, transparent 24%),
+        radial-gradient(circle at 12% 52%, rgba(255, 255, 247, 0.95) 0 6px, transparent 8px),
+        radial-gradient(circle at 22% 21%, rgba(241, 232, 204, 0.86) 0 5px, transparent 7px),
+        radial-gradient(circle at 80% 18%, rgba(255, 255, 247, 0.92) 0 6px, transparent 8px),
+        radial-gradient(circle at 91% 58%, rgba(238, 226, 193, 0.84) 0 5px, transparent 7px),
+        radial-gradient(circle at 34% 92%, rgba(255, 255, 246, 0.84) 0 5px, transparent 7px);
+    }
+
+    .crater-preview.can .crater-shape {
+      background:
+        radial-gradient(ellipse at 48% 53%, rgba(39, 29, 20, var(--crater-depth)) 0 16%, rgba(76, 55, 35, 0.48) 27%, transparent 50%),
+        radial-gradient(ellipse at 31% 36%, rgba(255, 255, 245, 0.8) 0 9%, transparent 24%),
+        radial-gradient(ellipse at 70% 66%, rgba(75, 53, 33, 0.38) 0 13%, transparent 29%),
+        radial-gradient(ellipse at center, rgba(92, 67, 41, 0.52) 0 34%, rgba(210, 195, 158, 0.9) 51%, rgba(255, 252, 239, 0.95) 66%, transparent 75%);
+      box-shadow:
+        inset 10px 16px 20px rgba(42, 30, 20, 0.4),
+        inset -8px -12px 18px rgba(255, 255, 248, 0.66),
+        0 0 0 2px rgba(148, 119, 70, 0.12);
+    }
+
+    .crater-preview.can .crater-shape::before {
+      inset: -10% -14% -7%;
+      border-width: 5px;
+      background:
+        radial-gradient(ellipse at 24% 42%, rgba(255, 255, 245, 0.86) 0 8%, transparent 19%),
+        radial-gradient(ellipse at 76% 26%, rgba(255, 250, 229, 0.66) 0 6%, transparent 14%),
+        radial-gradient(ellipse at 77% 64%, rgba(145, 111, 65, 0.34) 0 8%, transparent 19%),
+        radial-gradient(ellipse at 42% 82%, rgba(181, 151, 91, 0.28) 0 7%, transparent 15%);
+      box-shadow:
+        0 0 0 3px rgba(160, 132, 78, 0.18),
+        0 10px 14px rgba(90, 68, 38, 0.14);
+    }
+
+    .live-crater-preview {
+      display: none;
+      width: min(520px, 100%);
+      margin: 10px auto 0;
+      padding: 18px;
+      opacity: 0;
+      transform: translateY(8px);
+    }
+
+    .live-crater-preview.show {
+      display: block;
+      animation: live-crater-reveal 420ms ease-out forwards;
+    }
+
+    .live-crater-preview .crater-preview-title {
+      margin-bottom: 8px;
+      font-size: 1rem;
+    }
+
+    .live-crater-preview .crater-surface {
+      height: 180px;
+    }
+
+    .live-crater-preview.show .flour-slap {
+      animation: live-flour-slap 520ms ease-out;
+    }
+
+    .live-crater-preview.show .crater-shape {
+      animation: live-crater-stamp 520ms ease-out;
+    }
+
+    @keyframes live-crater-reveal {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes live-flour-slap {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) rotate(var(--crater-rotation)) scale(0.55);
+      }
+
+      58% {
+        opacity: 1;
+        transform: translate(-50%, -50%) rotate(var(--crater-rotation)) scale(1.08);
+      }
+
+      100% {
+        opacity: 0.95;
+        transform: translate(-50%, -50%) rotate(var(--crater-rotation));
+      }
+    }
+
+    @keyframes live-crater-stamp {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) rotate(var(--crater-rotation)) scale(0.42);
+      }
+
+      62% {
+        opacity: 1;
+        transform: translate(-50%, -50%) rotate(var(--crater-rotation)) scale(1.08);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translate(-50%, -50%) rotate(var(--crater-rotation));
+      }
+    }
+
+    .report-actions {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 880px) {
+      body {
+        align-items: flex-start;
+        min-height: 100dvh;
+        padding: 6px 0 4px;
+        overflow-x: hidden;
+      }
+
+      .mode-tabs {
+        position: static;
+        width: calc(100% - 16px);
+        margin: 0 auto 8px;
+      }
+
+      .pdf-button {
+        position: static;
+        width: calc(100% - 16px);
+        min-height: 40px;
+        margin: 0 auto 8px;
+        padding: 9px 13px;
+        border-radius: 999px;
+        box-shadow: 0 4px 0 rgba(7, 92, 102, 0.22);
+        font-size: 0.9rem;
+      }
+
+      .mode-tab {
+        min-height: 40px;
+        padding: 9px 13px;
+        box-shadow: 0 4px 0 rgba(87, 98, 85, 0.18);
+        font-size: 0.86rem;
+      }
+
+      .activity-panel {
+        min-height: auto;
+        width: calc(100% - 8px);
+        padding: 6px;
+        border-width: 2px;
+        border-radius: 16px;
+      }
+
+      h1 {
+        margin-bottom: 5px;
+        font-size: clamp(1.05rem, 5.5vw, 1.45rem);
+        letter-spacing: 0;
+      }
+
+      .instructions {
+        margin-bottom: 8px;
+        font-size: clamp(0.58rem, 2.7vw, 0.78rem);
+        line-height: 1.2;
+      }
+
+      .content {
+        grid-template-columns: 25% minmax(0, 1fr) 20%;
+        gap: 6px;
+        align-items: start;
+      }
+
+      .sidebar {
+        padding-top: 0;
+        text-align: left;
+      }
+
+      .conditions-title,
+      .condition {
+        text-align: left;
+      }
+
+      .button {
+        padding: 8px 9px;
+        border-radius: 14px;
+        box-shadow: 0 4px 0 rgba(157, 77, 26, 0.22);
+        font-size: clamp(0.62rem, 2.7vw, 0.78rem);
+        line-height: 1.05;
+      }
+
+      .drop-button {
+        margin: 0 0 10px;
+      }
+
+      .conditions-title {
+        margin-bottom: 7px;
+        font-size: clamp(0.56rem, 2.5vw, 0.76rem);
+        line-height: 1.1;
+      }
+
+      .condition {
+        margin: 0 0 8px;
+        font-size: clamp(0.54rem, 2.4vw, 0.72rem);
+      }
+
+      .condition span {
+        margin-left: 0;
+      }
+
+      .change-button {
+        margin-left: 0;
+        min-width: 82px;
+      }
+
+      .view-title {
+        margin-bottom: 6px;
+        font-size: clamp(0.54rem, 2.4vw, 0.72rem);
+        letter-spacing: 0.03em;
+      }
+
+      .zoom-in {
+        min-height: auto;
+      }
+
+      .drop-window {
+        height: clamp(240px, 44vh, 340px);
+        border-width: 2px;
+        border-radius: 12px;
+        background-size: 22px 22px, auto;
+      }
+
+      .flour {
+        width: min(150px, 88%);
+        height: 46px;
+        bottom: 12px;
+      }
+
+      .flour::before {
+        left: 14px;
+        right: 14px;
+        height: 26px;
+      }
+
+      .flour-puff {
+        bottom: 58px;
+        width: min(122px, 78%);
+      }
+
+      .flour-label {
+        display: none;
+      }
+
+      .object-preview {
+        transform: translateX(-50%) scale(0.82);
+      }
+
+      .object-preview.potato {
+        transform: translateX(-50%) rotate(-8deg) scale(0.82);
+      }
+
+      .height-scale {
+        height: clamp(300px, 56vh, 410px);
+        width: 50px;
+        border-width: 2px;
+        border-radius: 10px;
+      }
+
+      .scale-mark {
+        left: -5px;
+        width: 60px;
+        height: 3px;
+      }
+
+      .scale-mark::before {
+        left: -43px;
+        top: -8px;
+        width: 38px;
+        font-size: clamp(0.48rem, 2.1vw, 0.62rem);
+      }
+
+      .mark-040 {
+        top: 33.333%;
+      }
+
+      .mark-020 {
+        top: 66.666%;
+      }
+
+      .height-pointer {
+        right: -20px;
+        border-top-width: 6px;
+        border-bottom-width: 6px;
+        border-right-width: 16px;
+      }
+
+      .pointer-040 {
+        top: 33.333%;
+      }
+
+      .pointer-020 {
+        top: 66.666%;
+      }
+
+      .scale-object-track {
+        top: 66.666%;
+      }
+
+      .scale-object {
+        transform: none;
+      }
+
+      .scale-object.potato {
+        transform: rotate(-8deg);
+      }
+
+      .report-overlay {
+        align-items: center;
+        padding: max(8px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom));
+        overflow-y: hidden;
+      }
+
+      .report-card {
+        min-height: auto;
+        max-height: calc(100vh - 16px);
+        padding: 10px 12px 14px;
+      }
+
+      .report-card h2 {
+        margin-bottom: 8px;
+        font-size: 1.35rem;
+      }
+
+      .report-line,
+      .formula-line,
+      .report-description,
+      .answer-line,
+      .crater-line {
+        font-size: 0.88rem;
+        line-height: 1.14;
+      }
+
+      .formula-block {
+        margin: 8px 0 10px;
+      }
+
+      .answer-line {
+        margin: 10px 0 6px;
+      }
+
+      .crater-preview {
+        margin-top: 0;
+        margin-bottom: 10px;
+      }
+
+      .crater-surface {
+        height: 96px;
+      }
+
+      .live-crater-preview .crater-surface {
+        height: 150px;
+      }
+
+      .report-actions {
+        gap: 10px;
+      }
+
+      .report-actions .button {
+        padding: 9px 12px;
+        border-radius: 999px;
+        font-size: 0.82rem;
+        line-height: 1.1;
+      }
+    }
+
+    @media (max-width: 640px) {
+      body {
+        display: block;
+        min-height: 100dvh;
+        padding: 8px 0 0;
+      }
+
+      .mode-tabs {
+        width: calc(100% - 16px);
+        gap: 10px;
+        margin-bottom: 18px;
+      }
+
+      .mode-tab {
+        flex: 1 1 0;
+        justify-content: center;
+        min-height: 40px;
+        padding: 9px 8px;
+        border-radius: 999px;
+        font-size: clamp(0.72rem, 3.3vw, 0.92rem);
+        text-align: center;
+      }
+
+      .pdf-button {
+        width: calc(100% - 16px);
+        border-radius: 12px;
+        font-size: 0.78rem;
+      }
+
+      .activity-panel {
+        width: 100%;
+        margin: 0 auto;
+        min-height: calc(100dvh - 68px);
+        padding: 8px 8px 16px;
+        border-width: 2px;
+        border-radius: 18px 18px 0 0;
+        box-shadow: 0 16px 44px rgba(23, 50, 58, 0.16);
+      }
+
+      h1 {
+        margin-bottom: 6px;
+        font-size: clamp(1.55rem, 8vw, 2.05rem);
+      }
+
+      .instructions {
+        margin-bottom: 10px;
+        max-width: 100%;
+        font-size: clamp(0.72rem, 3.45vw, 0.9rem);
+        line-height: 1.22;
+      }
+
+      .content {
+        grid-template-columns: 25% minmax(0, 1fr) 18%;
+        gap: 6px;
+        align-items: start;
+      }
+
+      .sidebar {
+        padding: 0;
+        text-align: left;
+      }
+
+      .drop-button,
+      .change-button {
+        width: auto;
+        min-height: 0;
+        margin: 0;
+        padding: 8px 9px;
+        border-radius: 16px;
+        font-size: clamp(0.67rem, 3.05vw, 0.86rem);
+      }
+
+      .conditions-title {
+        margin: 14px 0 8px;
+        font-size: clamp(0.66rem, 3vw, 0.84rem);
+        line-height: 1.05;
+      }
+
+      .condition {
+        min-height: 0;
+        margin: 0 0 12px;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        font-size: clamp(0.62rem, 2.85vw, 0.78rem);
+        line-height: 1.04;
+      }
+
+      .condition strong,
+      .condition span {
+        display: block;
+      }
+
+      .condition span {
+        margin-left: 0;
+      }
+
+      .change-button {
+        margin-top: 8px;
+      }
+
+      .view-title {
+        min-height: 28px;
+        margin-bottom: 4px;
+        font-size: clamp(0.6rem, 2.75vw, 0.75rem);
+        line-height: 1.1;
+        letter-spacing: 0.05em;
+      }
+
+      .zoom-in,
+      .zoom-out {
+        min-height: auto;
+      }
+
+      .drop-window {
+        height: clamp(330px, 56dvh, 460px);
+        min-height: 330px;
+        border-width: 2px;
+        border-radius: 16px;
+        background-size: 22px 22px, auto;
+      }
+
+      .flour {
+        width: min(150px, 90%);
+        height: 48px;
+        bottom: 13px;
+      }
+
+      .flour::before {
+        left: 16px;
+        right: 16px;
+        top: 5px;
+        height: 27px;
+      }
+
+      .flour-label {
+        display: none;
+      }
+
+      .live-crater-preview {
+        margin-top: 8px;
+      }
+
+      .live-crater-preview .crater-surface {
+        height: 96px;
+      }
+
+      .height-scale {
+        width: min(58px, 16vw);
+        height: clamp(410px, 69dvh, 560px);
+        margin: 0 auto;
+        border-width: 3px;
+        border-radius: 12px;
+      }
+
+      .scale-mark {
+        left: -7px;
+        width: calc(100% + 14px);
+        height: 4px;
+      }
+
+      .scale-mark::before {
+        left: -40px;
+        top: -8px;
+        width: 36px;
+        font-size: clamp(0.54rem, 2.45vw, 0.66rem);
+      }
+
+      .height-pointer {
+        right: -22px;
+        border-top-width: 7px;
+        border-bottom-width: 7px;
+        border-right-width: 18px;
+      }
+
+      .report-card {
+        width: min(100%, 430px);
+        padding: 9px 10px 12px;
+      }
+
+      .report-line,
+      .formula-line,
+      .report-description,
+      .answer-line,
+      .crater-line {
+        font-size: 0.82rem;
+      }
+
+      .report-card .crater-preview .crater-surface {
+        height: 82px;
+      }
+    }
+    .site-credit {
+      width: min(990px, calc(100% - 32px));
+      margin: 10px auto 0;
+      color: rgba(23, 50, 58, 0.78);
+      font-size: 0.78rem;
+      font-weight: 700;
+      line-height: 1.25;
+      text-align: center;
+    }
+
+    .site-credit span {
+      color: var(--accent-dark);
+    }
+
+    @media (max-width: 640px) {
+      .site-credit {
+        width: calc(100% - 16px);
+        margin: 8px auto 10px;
+        font-size: 0.66rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="mode-tabs" aria-label="Lab mode">
+    <a class="mode-tab active" href="actual.html" aria-current="page">Flour Impact Lab</a>
+    <a class="mode-tab" href="actual2.html">Gravity Lab Simulator</a>
+  </nav>
+  <a class="pdf-button" href="Flour_Impact_Lab_Problem_Set.html">Problem Set</a>
+
+  <main class="activity-panel">
+    <h1>Flour Impact Lab</h1>
+
+    <p class="instructions">
+      Click on the <span>Drop Object</span> button to run a trial. Click on the
+      <span>Change Conditions</span> button to change the conditions.
+    </p>
+
+    <section class="content">
+      <aside class="sidebar">
+        <button class="button drop-button" type="button" id="dropObject">Drop Object</button>
+
+        <p class="conditions-title">Experimental Conditions:</p>
+
+        <p class="condition">
+          <strong>Object:</strong>
+          <span id="selectedObject">Ping pong ball</span>
+        </p>
+
+        <p class="condition">
+          <strong>Mass:</strong>
+          <span id="selectedMass">0.0027 kg</span>
+        </p>
+
+        <p class="condition">
+          <strong>Drop Height:</strong>
+          <span id="selectedHeight">0.20 m</span>
+        </p>
+
+        <p class="condition">
+          <strong>Landing Surface:</strong>
+          <span id="selectedSurface">2 inch of flour</span>
+        </p>
+
+        <button class="button change-button" type="button" id="changeConditions">Change Conditions</button>
+      </aside>
+
+      <section class="zoom-in">
+        <p class="view-title">ZOOM IN VIEW</p>
+        <div class="drop-window">
+          <div class="object-preview" id="objectPreview">CAN</div>
+          <div class="flour" aria-label="2 inch of flour landing surface"></div>
+          <div class="flour-puff" id="flourPuff" aria-hidden="true"></div>
+          <div class="flour-label">2 inch flour landing surface</div>
+        </div>
+        <div class="crater-preview live-crater-preview" id="liveCraterPreview" aria-label="Animated top-down crater preview">
+          <p class="crater-preview-title">Bird's-eye impact view</p>
+          <div class="crater-surface" id="liveCraterSurface">
+            <div class="flour-slap" aria-hidden="true"></div>
+            <div class="crater-shape" id="liveCraterShape"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="zoom-out">
+        <p class="view-title">ZOOM OUT VIEW</p>
+        <div class="height-scale">
+          <div class="scale-mark mark-060" data-label="0.60 m"></div>
+          <div class="scale-mark mark-040" data-label="0.40 m"></div>
+          <div class="scale-mark mark-020" data-label="0.20 m"></div>
+          <div class="scale-object-track" id="scaleObjectTrack" aria-label="Selected object in zoom out view">
+            <div class="scale-object" id="scaleObject"></div>
+          </div>
+          <div class="height-pointer pointer-020" id="heightPointer"></div>
+        </div>
+      </section>
+    </section>
+
+    <div class="report-overlay" id="reportOverlay" role="dialog" aria-modal="true" aria-labelledby="reportTitle">
+      <section class="report-card">
+        <h2 id="reportTitle">Report:</h2>
+
+        <p class="report-line">Object: <span id="reportObject"></span></p>
+        <p class="report-line">Mass: <span id="reportMass"></span></p>
+        <p class="report-line">Drop Height: <span id="reportHeight"></span></p>
+        <p class="report-line">Landing Surface: <span id="reportSurface"></span></p>
+
+        <p class="report-description" id="reportDescription"></p>
+
+        <div class="formula-block">
+          <p class="formula-line">Formula: <span>PEg = mgh</span></p>
+          <p class="formula-line">
+            PEg = (<span id="formulaMass"></span>)(<span id="formulaGravity">9.8 m/s^2</span>)(<span id="formulaHeight"></span>)
+          </p>
+        </div>
+
+        <p class="answer-line">Potential Energy = <span class="answer" id="reportAnswer"></span></p>
+        <p class="crater-line">Estimated crater diameter in the flour: <span id="reportCrater"></span></p>
+
+        <div class="crater-preview report-crater-preview" id="craterPreview" aria-label="Top-down preview of the crater in the flour">
+          <p class="crater-preview-title">Possible crater from above</p>
+          <div class="crater-surface" id="craterSurface">
+            <div class="flour-slap" aria-hidden="true"></div>
+            <div class="crater-shape" id="craterShape"></div>
+          </div>
+        </div>
+
+        <div class="report-actions">
+          <button class="button" type="button" id="repeatAnimation">Repeat Animation</button>
+          <button class="button" type="button" id="reportChangeConditions">Change Conditions</button>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-credit">
+    Created by <span>TUAZON, SANCHEZ, BANQUERIGO, and PADIDA</span>. Special credit to <span>TUAZON</span><br> COMPUTER TECHNOLOGY STUDENTS.
+  </footer>
+
+  <script>
+    const defaults = {
+      object: 'Ping pong ball',
+      height: '0.20 m',
+      surface: '2 inch of flour'
+    };
+
+    const savedConditions = JSON.parse(localStorage.getItem('experimentConditions')) || defaults;
+    const conditions = { ...defaults, ...savedConditions };
+    const gravity = 9.8;
+    const masses = {
+      'Ping pong ball': 0.0027,
+      Potato: 0.013,
+      'Canned good': 0.143
+    };
+
+    function getSelectedMass() {
+      const customMass = Number.parseFloat(conditions.customMassKg);
+      return Number.isFinite(customMass) && customMass > 0 ? customMass : masses[conditions.object];
+    }
+
+    document.getElementById('selectedObject').textContent = conditions.object;
+    document.getElementById('selectedMass').textContent = `${formatNumber(getSelectedMass())} kg`;
+    document.getElementById('selectedHeight').textContent = conditions.height;
+    document.getElementById('selectedSurface').textContent = conditions.surface;
+
+    const pointer = document.getElementById('heightPointer');
+    pointer.className = 'height-pointer pointer-' + conditions.height.replace(/[^0-9]/g, '').padStart(3, '0');
+
+    const preview = document.getElementById('objectPreview');
+    const flour = document.querySelector('.flour');
+    const flourPuff = document.getElementById('flourPuff');
+    const heightScale = document.querySelector('.height-scale');
+    const scaleObjectTrack = document.getElementById('scaleObjectTrack');
+    const scaleObject = document.getElementById('scaleObject');
+    const liveCraterPreview = document.getElementById('liveCraterPreview');
+    const liveCraterSurface = document.getElementById('liveCraterSurface');
+    const liveCraterShape = document.getElementById('liveCraterShape');
+    const objectClass = {
+      'Ping pong ball': 'ball',
+      Potato: 'potato',
+      'Canned good': 'can'
+    }[conditions.object];
+
+    if (objectClass) {
+      preview.className = 'object-preview ' + objectClass;
+      scaleObject.className = 'scale-object ' + objectClass;
+    }
+
+    const heightPositionRatios = {
+      '0.20 m': 2 / 3,
+      '0.40 m': 1 / 3,
+      '0.60 m': 0
+    };
+
+    function getScaleStartTop() {
+      const ratio = heightPositionRatios[conditions.height] ?? heightPositionRatios['0.20 m'];
+      return heightScale.clientHeight * ratio;
+    }
+
+    const scaleObjectHeights = {
+      ball: 18,
+      potato: 19,
+      can: 27
+    };
+    const closeUpObjectLandingOffsets = {
+      ball: 36,
+      potato: 38,
+      can: 66
+    };
+
+    function getScaleLandingTop() {
+      const scaleBottomLineTop = heightScale.clientHeight - 4;
+      return scaleBottomLineTop - (scaleObjectHeights[objectClass] ?? scaleObjectHeights.ball);
+    }
+
+    function getCloseUpLandingTop() {
+      const objectLandingOffset = closeUpObjectLandingOffsets[objectClass] ?? closeUpObjectLandingOffsets.ball;
+      return flour.offsetTop - objectLandingOffset;
+    }
+
+    scaleObjectTrack.style.top = `${getScaleStartTop()}px`;
+
+    document.getElementById('changeConditions').addEventListener('click', () => {
+      window.location.href = 'index.html';
+    });
+
+    function formatNumber(value) {
+      return value.toFixed(6).replace(/0+$/, '').replace(/\.$/, '');
+    }
+
+    function getHeightInMeters() {
+      return Number.parseFloat(conditions.height);
+    }
+
+    function getDropDurationFromHeight(baseDuration = 2600) {
+      const maxHeight = 0.6;
+      const selectedHeight = getHeightInMeters();
+      const heightRatio = Math.sqrt(selectedHeight / maxHeight);
+      return Math.max(900, baseDuration * heightRatio);
+    }
+
+    function estimateCraterDiameterMeters(potentialEnergy) {
+      // Classroom flour tray estimate: crater growth is visible but slows as energy increases.
+      const objectBaseDiameters = {
+        ball: 0.025,
+        potato: 0.04,
+        can: 0.055
+      };
+      const baseDiameter = objectBaseDiameters[objectClass] ?? objectBaseDiameters.ball;
+      const energyGrowth = Math.sqrt(Math.max(0, potentialEnergy)) * 0.006;
+      return Math.min(0.36, baseDiameter + energyGrowth);
+    }
+
+    function getTrialResults() {
+      const mass = getSelectedMass();
+      const height = getHeightInMeters();
+      const potentialEnergy = mass * gravity * height;
+      const craterDiameter = estimateCraterDiameterMeters(potentialEnergy);
+      return { mass, height, potentialEnergy, craterDiameter };
+    }
+
+    function renderCraterPreview(craterPreview, craterSurface, craterShape, craterDiameter, extraClass = '', flourViewWidthMeters = 0.18) {
+      const craterClass = objectClass || 'ball';
+      const isReportPreview = extraClass.includes('report-crater-preview') || craterPreview.id === 'craterPreview';
+      const viewWidthMeters = isReportPreview ? 0.34 : flourViewWidthMeters;
+      const surfaceWidth = Math.max(1, craterSurface.clientWidth - 28);
+      const objectMinimumSizes = {
+        ball: isReportPreview ? 36 : 58,
+        potato: isReportPreview ? 44 : 68,
+        can: isReportPreview ? 48 : 78
+      };
+      const maxCraterSize = surfaceWidth * (isReportPreview ? 0.46 : 0.86);
+      const craterSize = Math.min(
+        maxCraterSize,
+        Math.max(objectMinimumSizes[craterClass] ?? 58, craterDiameter * (surfaceWidth / viewWidthMeters))
+      );
+      const normalizedDiameter = Math.max(0, Math.min(1, craterDiameter / 0.36));
+      const slapWidth = craterSize * (isReportPreview ? 1.72 : craterClass === 'can' ? 2.55 : 2.18);
+      const slapHeight = craterSize * (isReportPreview ? 1.28 : craterClass === 'can' ? 2.02 : 1.72);
+      const craterDepth = 0.34 + (normalizedDiameter * 0.36);
+
+      craterPreview.style.setProperty('--crater-size', `${craterSize}px`);
+      craterPreview.style.setProperty('--slap-width', `${slapWidth}px`);
+      craterPreview.style.setProperty('--slap-height', `${slapHeight}px`);
+      craterPreview.style.setProperty('--crater-depth', craterDepth.toFixed(2));
+      craterPreview.style.setProperty('--crater-rotation', craterClass === 'potato' ? '-10deg' : craterClass === 'can' ? '4deg' : '0deg');
+      craterPreview.className = `crater-preview ${extraClass} ${craterClass}`.trim();
+      craterShape.className = `crater-shape ${craterClass}`;
+    }
+
+    function updateReportCraterPreview(craterDiameter) {
+      renderCraterPreview(
+        document.getElementById('craterPreview'),
+        document.getElementById('craterSurface'),
+        document.getElementById('craterShape'),
+        craterDiameter,
+        'report-crater-preview'
+      );
+    }
+
+    function showLiveCraterPreview() {
+      const { craterDiameter } = getTrialResults();
+
+      liveCraterPreview.classList.remove('show');
+      liveCraterPreview.style.display = 'block';
+      renderCraterPreview(liveCraterPreview, liveCraterSurface, liveCraterShape, craterDiameter, 'live-crater-preview');
+
+      void liveCraterPreview.offsetWidth;
+      liveCraterPreview.classList.add('show');
+    }
+
+    function resetObjects() {
+      preview.getAnimations().forEach((animation) => animation.cancel());
+      scaleObjectTrack.getAnimations().forEach((animation) => animation.cancel());
+      flour.classList.remove('impact');
+      flourPuff.classList.remove('active');
+      preview.classList.remove('show');
+      preview.style.top = '-110px';
+      scaleObjectTrack.style.top = `${getScaleStartTop()}px`;
+      liveCraterPreview.classList.remove('show');
+      liveCraterPreview.style.display = '';
+    }
+
+    function showFlourImpact() {
+      flour.classList.remove('impact');
+      flourPuff.classList.remove('active');
+
+      // Restart the contact animations cleanly each time the trial is repeated.
+      void flour.offsetWidth;
+      flour.classList.add('impact');
+      flourPuff.classList.add('active');
+      showLiveCraterPreview();
+    }
+
+    function runDropAnimation() {
+      resetObjects();
+
+      const scaleStartTop = getScaleStartTop();
+      const scaleLandingTop = getScaleLandingTop();
+      const closeUpLandingTop = getCloseUpLandingTop();
+      const scaleDuration = getDropDurationFromHeight();
+      const closeUpDuration = Math.max(540, scaleDuration * 0.28);
+      const closeUpDelay = Math.max(0, scaleDuration - closeUpDuration);
+
+      const scaleAnimation = scaleObjectTrack.animate(
+        [
+          { transform: 'translateX(-50%) translateY(0)' },
+          { transform: `translateX(-50%) translateY(${scaleLandingTop - scaleStartTop}px)` }
+        ],
+        {
+          duration: scaleDuration,
+          easing: 'cubic-bezier(.55, 0, 1, 1)',
+          fill: 'forwards'
+        }
+      );
+
+      const closeUpFinished = new Promise((resolve) => {
+        window.setTimeout(resolve, closeUpDelay + closeUpDuration + 140);
+      });
+
+      window.setTimeout(() => {
+        preview.classList.add('show');
+        preview.animate(
+          [
+            { top: '-95px' },
+            { top: `${closeUpLandingTop}px` }
+          ],
+          {
+            duration: closeUpDuration,
+            easing: 'cubic-bezier(.55, 0, 1, 1)',
+            fill: 'forwards'
+          }
+        );
+
+        window.setTimeout(showFlourImpact, closeUpDuration * 0.9);
+      }, closeUpDelay);
+
+      return {
+        finished: Promise.all([scaleAnimation.finished, closeUpFinished])
+      };
+    }
+
+    function showReport() {
+      const { mass, height, potentialEnergy, craterDiameter } = getTrialResults();
+
+      document.getElementById('reportObject').textContent = conditions.object;
+      document.getElementById('reportMass').textContent = `${mass} kg`;
+      document.getElementById('reportHeight').textContent = conditions.height;
+      document.getElementById('reportSurface').textContent = conditions.surface;
+      document.getElementById('reportDescription').innerHTML =
+        `The <span>${conditions.object}</span> was lifted to a height of <span>${conditions.height}</span>. ` +
+        `When it was released, gravity pulled it downward toward the <span>${conditions.surface}</span>. ` +
+        `Before impact, the object had gravitational potential energy based on its mass, gravity, and height.`;
+      document.getElementById('formulaMass').textContent = `${mass} kg`;
+      document.getElementById('formulaHeight').textContent = `${height} m`;
+      document.getElementById('reportAnswer').textContent = `${formatNumber(potentialEnergy)} J`;
+      document.getElementById('reportCrater').textContent = `${craterDiameter.toFixed(4)} m`;
+      document.getElementById('reportOverlay').classList.add('show');
+      updateReportCraterPreview(craterDiameter);
+    }
+
+    document.getElementById('dropObject').addEventListener('click', () => {
+      const animation = runDropAnimation();
+      animation.finished.then(() => {
+        window.setTimeout(showReport, 1600);
+      });
+    });
+
+    document.getElementById('repeatAnimation').addEventListener('click', () => {
+      document.getElementById('reportOverlay').classList.remove('show');
+      resetObjects();
+    });
+
+    document.getElementById('reportChangeConditions').addEventListener('click', () => {
+      window.location.href = 'index.html';
+    });
+  </script>
+</body>
+</html>

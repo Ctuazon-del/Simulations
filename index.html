@@ -1,0 +1,434 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flour Impact Lab Setup</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --ink: #17323a;
+      --muted: #5f7478;
+      --panel: rgba(255, 252, 241, 0.94);
+      --accent: #087f8c;
+      --accent-dark: #075c66;
+      --sun: #f2a541;
+      --sand: #f7e8c9;
+      --line: #17444c;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 22px;
+      background:
+        radial-gradient(circle at 16% 18%, rgba(242, 165, 65, 0.34) 0 120px, transparent 122px),
+        radial-gradient(circle at 84% 12%, rgba(8, 127, 140, 0.24) 0 150px, transparent 152px),
+        linear-gradient(135deg, #f8f0dc, #eaf6f4 52%, #f9f3e6);
+      color: var(--ink);
+      font-family: "Trebuchet MS", "Lucida Sans Unicode", sans-serif;
+    }
+
+    .mode-tabs {
+      position: fixed;
+      top: 21px;
+      left: 23px;
+      z-index: 5;
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .mode-tab {
+      display: inline-flex;
+      align-items: center;
+      min-height: 48px;
+      padding: 12px 16px;
+      border: 0;
+      border-radius: 999px;
+      background: rgba(248, 253, 251, 0.9);
+      box-shadow: 0 8px 0 rgba(87, 98, 85, 0.18);
+      color: var(--accent-dark);
+      font: inherit;
+      font-size: 1rem;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform 160ms ease, box-shadow 160ms ease;
+    }
+
+    .mode-tab.active {
+      background: linear-gradient(135deg, var(--sun), #f06d3a);
+      box-shadow: 0 8px 0 rgba(157, 77, 26, 0.22);
+      color: #ffffff;
+    }
+
+    .pdf-button {
+      position: fixed;
+      top: 21px;
+      right: 23px;
+      z-index: 5;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 12px 16px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--accent), #11a7a7);
+      box-shadow: 0 8px 0 rgba(7, 92, 102, 0.22);
+      color: #ffffff;
+      font: inherit;
+      font-size: 1rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: transform 160ms ease, box-shadow 160ms ease;
+    }
+
+    .pdf-button:hover {
+      transform: translateY(-2px);
+    }
+
+    .experiment-panel {
+      width: min(990px, calc(100% - 32px));
+      min-height: 700px;
+      border: 3px solid var(--line);
+      border-radius: 28px;
+      padding: 28px 44px 42px;
+      text-align: center;
+      background: var(--panel);
+      box-shadow: 0 22px 60px rgba(23, 50, 58, 0.18);
+    }
+
+    h1 {
+      margin: 0 0 20px;
+      color: var(--accent-dark);
+      font-size: clamp(2.2rem, 5vw, 3rem);
+      line-height: 1.1;
+      letter-spacing: -0.04em;
+    }
+
+    .instructions {
+      margin: 0 auto 46px;
+      max-width: 760px;
+      color: var(--muted);
+      font-size: clamp(1.05rem, 2.2vw, 1.25rem);
+      font-weight: 700;
+      line-height: 1.3;
+    }
+
+    .conditions {
+      display: grid;
+      grid-template-columns: 240px repeat(3, 1fr);
+      gap: 34px 56px;
+      align-items: center;
+      margin: 0 auto;
+      max-width: 860px;
+    }
+
+    .label {
+      justify-self: end;
+      font-size: clamp(1.25rem, 2.4vw, 1.45rem);
+      font-weight: 700;
+      color: var(--accent-dark);
+    }
+
+    .option {
+      min-width: 144px;
+      padding: 12px 16px;
+      border: 2px solid rgba(23, 68, 76, 0.24);
+      border-radius: 999px;
+      background: #ffffff;
+      box-shadow: 0 8px 0 rgba(23, 68, 76, 0.12);
+      color: var(--ink);
+      font-family: inherit;
+      font-size: clamp(1rem, 1.8vw, 1.18rem);
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+    }
+
+    .option:hover,
+    .mode-tab:hover,
+    .run-button:hover {
+      transform: translateY(-2px);
+    }
+
+    .option.selected {
+      border-color: var(--accent-dark);
+      background: linear-gradient(135deg, var(--accent), #11a7a7);
+      box-shadow: 0 8px 0 rgba(7, 92, 102, 0.32);
+      color: #ffffff;
+    }
+
+    .option[data-group="surface"] {
+      grid-column: 2 / span 3;
+      justify-self: start;
+      min-width: 220px;
+    }
+
+    .mass-control {
+      grid-column: 2 / span 3;
+      justify-self: start;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      text-align: left;
+    }
+
+    .mass-control input {
+      width: 180px;
+      min-height: 48px;
+      padding: 8px 14px;
+      border: 2px solid rgba(23, 68, 76, 0.24);
+      border-radius: 14px;
+      background: #ffffff;
+      color: var(--ink);
+      font: inherit;
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+
+    .mass-hint {
+      color: var(--muted);
+      font-size: 0.96rem;
+      font-weight: 700;
+    }
+
+    .run-copy {
+      margin: 92px auto 32px;
+      max-width: 760px;
+      color: var(--muted);
+      font-size: clamp(1.05rem, 2vw, 1.2rem);
+      font-weight: 700;
+    }
+
+    .run-copy span {
+      color: var(--sun);
+    }
+
+    .run-button {
+      min-width: 164px;
+      padding: 13px 28px;
+      border: 0;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--sun), #f06d3a);
+      box-shadow: 0 10px 0 rgba(157, 77, 26, 0.22);
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 1.25rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 160ms ease, box-shadow 160ms ease;
+    }
+
+    @media (max-width: 760px) {
+      body {
+        align-items: center;
+        min-height: 100dvh;
+        padding: 8px 0 6px;
+        overflow-x: hidden;
+      }
+
+      .mode-tabs {
+        position: static;
+        width: calc(100% - 16px);
+        margin: 0 auto 8px;
+      }
+
+      .pdf-button {
+        position: static;
+        width: calc(100% - 16px);
+        min-height: 40px;
+        margin: 0 auto 8px;
+        padding: 9px 13px;
+        border-radius: 999px;
+        box-shadow: 0 4px 0 rgba(7, 92, 102, 0.22);
+        font-size: 0.86rem;
+      }
+
+      .mode-tab {
+        min-height: 40px;
+        padding: 9px 13px;
+        box-shadow: 0 4px 0 rgba(87, 98, 85, 0.18);
+        font-size: 0.86rem;
+      }
+
+      .experiment-panel {
+        width: calc(100% - 8px);
+        min-height: auto;
+        margin: 0 auto;
+        padding: 14px 14px 18px;
+        border-width: 2px;
+        border-radius: 16px;
+      }
+
+      .instructions {
+        margin-bottom: 18px;
+      }
+
+      .conditions {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+
+      .label,
+      .option,
+      .option[data-group="surface"],
+      .mass-control {
+        justify-self: stretch;
+        grid-column: auto;
+      }
+
+      .mass-control input {
+        width: 100%;
+      }
+
+      .label {
+        margin-top: 8px;
+        text-align: left;
+      }
+
+      .run-copy {
+        margin: 24px auto 16px;
+      }
+    }
+    .site-credit {
+      width: min(980px, calc(100% - 32px));
+      margin: 10px auto 0;
+      color: rgba(23, 50, 58, 0.78);
+      font-size: 0.78rem;
+      font-weight: 700;
+      line-height: 1.25;
+      text-align: center;
+    }
+
+    .site-credit span {
+      color: var(--accent-dark);
+    }
+
+    @media (max-width: 640px) {
+      .site-credit {
+        width: calc(100% - 16px);
+        margin: 8px auto 10px;
+        font-size: 0.66rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="mode-tabs" aria-label="Lab mode">
+    <a class="mode-tab active" href="actual.html">Flour Impact Lab</a>
+    <a class="mode-tab" href="actual2.html">Gravity Lab Simulator</a>
+  </nav>
+  <a class="pdf-button" href="Flour_Impact_Lab_Problem_Set.html">Problem Set</a>
+
+  <main class="experiment-panel">
+    <h1>Flour Impact Lab</h1>
+
+    <p class="instructions">
+      Build your trial by choosing an object and drop height.<br>
+      Your active choices glow in teal.
+    </p>
+
+    <section class="conditions" aria-label="Experimental condition choices">
+      <div class="label">Object:</div>
+      <button class="option selected" type="button" data-group="object">Ping pong ball</button>
+      <button class="option" type="button" data-group="object">Potato</button>
+      <button class="option" type="button" data-group="object">Canned good</button>
+
+      <div class="label">Exact Mass:</div>
+      <div class="mass-control">
+        <input type="number" id="customMassKg" min="0.0001" step="0.0001" placeholder="Enter kg" aria-label="Exact object mass in kilograms">
+        <span class="mass-hint">Pick an object above, then type its kg if you need an exact mass.</span>
+      </div>
+
+      <div class="label">Height:</div>
+      <button class="option selected" type="button" data-group="height">0.20 m</button>
+      <button class="option" type="button" data-group="height">0.40 m</button>
+      <button class="option" type="button" data-group="height">0.60 m</button>
+
+      <div class="label">Landing Surface:</div>
+      <button class="option selected" type="button" data-group="surface">2 inch of flour</button>
+    </section>
+
+    <p class="run-copy">
+      Once satisfied with the selected conditions, click on the <span>Run Trial</span> button.
+    </p>
+
+    <button class="run-button" type="button" id="runTrial">Run Trial</button>
+  </main>
+
+  <footer class="site-credit">
+    Created by <span>TUAZON, SANCHEZ, BANQUERIGO, and PADIDA</span>. Special credit to <span>TUAZON</span><BR> COMPUTER TECHNOLOGY STUDENTS.  
+  </footer>
+
+  <script>
+    const options = document.querySelectorAll('.option');
+
+    function selectOption(group, value) {
+      const matchingOption = Array.from(options).find((option) => {
+        return option.dataset.group === group && option.textContent.trim() === value;
+      });
+
+      if (!matchingOption) {
+        return;
+      }
+
+      document
+        .querySelectorAll(`.option[data-group="${group}"]`)
+        .forEach((groupOption) => groupOption.classList.remove('selected'));
+
+      matchingOption.classList.add('selected');
+    }
+
+    const savedConditions = JSON.parse(localStorage.getItem('experimentConditions')) || {};
+    const customMassInput = document.getElementById('customMassKg');
+
+    Object.entries(savedConditions).forEach(([group, value]) => {
+      selectOption(group, value);
+    });
+
+    if (savedConditions.customMassKg) {
+      customMassInput.value = savedConditions.customMassKg;
+    }
+
+    options.forEach((option) => {
+      option.addEventListener('click', () => {
+        const group = option.dataset.group;
+        selectOption(group, option.textContent.trim());
+      });
+    });
+
+    document.getElementById('runTrial').addEventListener('click', () => {
+      const selections = {};
+
+      document.querySelectorAll('.option.selected').forEach((option) => {
+        selections[option.dataset.group] = option.textContent.trim();
+      });
+
+      const customMass = Number.parseFloat(customMassInput.value);
+      if (customMassInput.value.trim() !== '') {
+        if (!Number.isFinite(customMass) || customMass <= 0) {
+          customMassInput.focus();
+          alert('Please enter an exact mass greater than 0 kg.');
+          return;
+        }
+
+        selections.customMassKg = String(customMass);
+      }
+
+      localStorage.setItem('experimentConditions', JSON.stringify(selections));
+      window.location.href = 'actual.html';
+    });
+  </script>
+</body>
+</html>
