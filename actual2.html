@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gravity Lab Simulator</title>
-  <link rel="icon" type="image/jpeg" href="logo-circle.png" />
   <style>
     * {
       box-sizing: border-box;
@@ -1047,7 +1046,7 @@
           <h2>Object Weight</h2>
           <div class="field">
             <label for="objectMass">Mass in kilograms</label>
-            <input class="number-input" type="number" id="objectMass" min="0.01" max="50" step="0.01" value="0.45">
+            <input class="number-input" type="number" id="objectMass" min="0.01" step="0.01" value="0.45">
           </div>
           <p class="feedback" id="feedbackText">Choose a height, then press Drop to begin.</p>
         </section>
@@ -1365,7 +1364,7 @@
     });
 
     objectMass.addEventListener('input', () => {
-      state.mass = clamp(Number(objectMass.value) || 0.01, 0.01, 50);
+      state.mass = Math.max(Number(objectMass.value) || 0.01, 0.01);
       objectMasses[state.object] = state.mass;
       feedbackText.textContent = `${objectNames[state.object]} mass updated.`;
     });
