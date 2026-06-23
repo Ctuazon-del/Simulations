@@ -1666,21 +1666,25 @@
     function renderCraterPreview(craterPreview, craterSurface, craterShape, craterDiameter, extraClass = '', flourViewWidthMeters = 0.34) {
       const craterClass = objectClass || 'ball';
       const isReportPreview = extraClass.includes('report-crater-preview') || craterPreview.id === 'craterPreview';
+      const isCompactLivePreview = !isReportPreview && craterSurface.clientHeight <= 110;
       const viewWidthMeters = isReportPreview ? 0.34 : flourViewWidthMeters;
       const surfaceWidth = Math.max(1, craterSurface.clientWidth - 28);
       const objectMinimumSizes = {
-        ball: isReportPreview ? 36 : 58,
-        potato: isReportPreview ? 44 : 68,
-        can: isReportPreview ? 48 : 72
+        ball: isReportPreview ? 36 : isCompactLivePreview ? 48 : 58,
+        potato: isReportPreview ? 44 : isCompactLivePreview ? 56 : 68,
+        can: isReportPreview ? 48 : isCompactLivePreview ? 60 : 72
       };
-      const maxCraterSize = surfaceWidth * (isReportPreview ? 0.46 : 0.86);
+      const maxCraterSize = Math.min(
+        surfaceWidth * (isReportPreview ? 0.46 : isCompactLivePreview ? 0.62 : 0.86),
+        craterSurface.clientHeight * (isReportPreview ? 0.8 : isCompactLivePreview ? 0.68 : 1.2)
+      );
       const craterSize = Math.min(
         maxCraterSize,
         Math.max(objectMinimumSizes[craterClass] ?? 58, craterDiameter * (surfaceWidth / viewWidthMeters))
       );
       const normalizedDiameter = Math.max(0, Math.min(1, craterDiameter / 0.36));
-      const slapWidth = craterSize * (isReportPreview ? 1.72 : craterClass === 'can' ? 2.2 : 2.18);
-      const slapHeight = craterSize * (isReportPreview ? 1.28 : craterClass === 'can' ? 1.76 : 1.72);
+      const slapWidth = craterSize * (isReportPreview ? 1.72 : isCompactLivePreview ? 1.72 : craterClass === 'can' ? 2.2 : 2.18);
+      const slapHeight = craterSize * (isReportPreview ? 1.28 : isCompactLivePreview ? 1.32 : craterClass === 'can' ? 1.76 : 1.72);
       const craterDepth = 0.34 + (normalizedDiameter * 0.36);
 
       craterPreview.style.setProperty('--crater-size', `${craterSize}px`);
