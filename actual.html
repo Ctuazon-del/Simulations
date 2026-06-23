@@ -1,10 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Flour Impact Lab</title>
-  <link rel="icon" type="image/jpeg" href="logo-circle.png" />
   <style>
     * {
       box-sizing: border-box;
@@ -943,8 +942,16 @@
     }
 
     @media (max-width: 880px) {
+      html {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+      }
+
       body {
         align-items: flex-start;
+        width: 100%;
+        max-width: 100%;
         min-height: 100dvh;
         padding: 6px 0 4px;
         overflow-x: hidden;
@@ -1206,22 +1213,22 @@
       body {
         display: block;
         min-height: 100dvh;
-        padding: 8px 0 0;
+        padding: 6px 0 4px;
       }
 
       .mode-tabs {
         width: calc(100% - 16px);
-        gap: 10px;
-        margin-bottom: 18px;
+        gap: 8px;
+        margin-bottom: 8px;
       }
 
       .mode-tab {
-        flex: 1 1 0;
+        flex: 1 1 150px;
         justify-content: center;
-        min-height: 40px;
-        padding: 9px 8px;
-        border-radius: 999px;
-        font-size: clamp(0.72rem, 3.3vw, 0.92rem);
+        min-height: 38px;
+        padding: 8px 10px;
+        border-radius: 12px;
+        font-size: 0.78rem;
         text-align: center;
       }
 
@@ -1232,12 +1239,12 @@
       }
 
       .activity-panel {
-        width: 100%;
+        width: calc(100% - 10px);
         margin: 0 auto;
         min-height: calc(100dvh - 68px);
-        padding: 8px 8px 16px;
+        padding: 8px;
         border-width: 2px;
-        border-radius: 18px 18px 0 0;
+        border-radius: 18px;
         box-shadow: 0 16px 44px rgba(23, 50, 58, 0.16);
       }
 
@@ -1546,8 +1553,8 @@
     const gravity = 9.8;
     const masses = {
       'Ping pong ball': 0.0027,
-      Potato: 0.013,
-      'Canned good': 0.143
+      Potato: 0.13,
+      'Canned good': 0.17
     };
 
     function getSelectedMass() {
@@ -1639,9 +1646,9 @@
     function estimateCraterDiameterMeters(potentialEnergy) {
       // Classroom flour tray estimate: crater growth is visible but slows as energy increases.
       const objectBaseDiameters = {
-        ball: 0.025,
-        potato: 0.04,
-        can: 0.055
+        ball: 0.04,
+        potato: 0.055,
+        can: 0.065
       };
       const baseDiameter = objectBaseDiameters[objectClass] ?? objectBaseDiameters.ball;
       const energyGrowth = Math.sqrt(Math.max(0, potentialEnergy)) * 0.006;
@@ -1656,7 +1663,7 @@
       return { mass, height, potentialEnergy, craterDiameter };
     }
 
-    function renderCraterPreview(craterPreview, craterSurface, craterShape, craterDiameter, extraClass = '', flourViewWidthMeters = 0.18) {
+    function renderCraterPreview(craterPreview, craterSurface, craterShape, craterDiameter, extraClass = '', flourViewWidthMeters = 0.34) {
       const craterClass = objectClass || 'ball';
       const isReportPreview = extraClass.includes('report-crater-preview') || craterPreview.id === 'craterPreview';
       const viewWidthMeters = isReportPreview ? 0.34 : flourViewWidthMeters;
@@ -1664,7 +1671,7 @@
       const objectMinimumSizes = {
         ball: isReportPreview ? 36 : 58,
         potato: isReportPreview ? 44 : 68,
-        can: isReportPreview ? 48 : 78
+        can: isReportPreview ? 48 : 72
       };
       const maxCraterSize = surfaceWidth * (isReportPreview ? 0.46 : 0.86);
       const craterSize = Math.min(
@@ -1672,8 +1679,8 @@
         Math.max(objectMinimumSizes[craterClass] ?? 58, craterDiameter * (surfaceWidth / viewWidthMeters))
       );
       const normalizedDiameter = Math.max(0, Math.min(1, craterDiameter / 0.36));
-      const slapWidth = craterSize * (isReportPreview ? 1.72 : craterClass === 'can' ? 2.55 : 2.18);
-      const slapHeight = craterSize * (isReportPreview ? 1.28 : craterClass === 'can' ? 2.02 : 1.72);
+      const slapWidth = craterSize * (isReportPreview ? 1.72 : craterClass === 'can' ? 2.2 : 2.18);
+      const slapHeight = craterSize * (isReportPreview ? 1.28 : craterClass === 'can' ? 1.76 : 1.72);
       const craterDepth = 0.34 + (normalizedDiameter * 0.36);
 
       craterPreview.style.setProperty('--crater-size', `${craterSize}px`);
