@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Flour Impact Lab</title>
-  <link rel="icon" type="image/jpeg" href="logo-circle.png" />
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <style>
     * {
       box-sizing: border-box;
@@ -674,11 +674,30 @@
       height: 118px;
     }
 
-    .crater-preview-title {
+    .crater-preview-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
       margin: 0 0 8px;
+      flex-wrap: wrap;
+    }
+
+    .crater-preview-title {
+      margin: 0;
       color: var(--accent-dark);
       font-size: 0.9rem;
       font-weight: 700;
+    }
+
+    .download-image-button {
+      min-height: 32px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--accent), #11a7a7);
+      box-shadow: 0 5px 0 rgba(7, 92, 102, 0.2);
+      font-size: 0.76rem;
+      line-height: 1;
     }
 
     .crater-surface {
@@ -1154,7 +1173,7 @@
       .report-overlay {
         align-items: center;
         padding: max(8px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom));
-        overflow-y: hidden;
+        overflow-y: auto;
       }
 
       .report-card {
@@ -1207,6 +1226,12 @@
         border-radius: 999px;
         font-size: 0.82rem;
         line-height: 1.1;
+      }
+
+      .download-image-button {
+        min-height: 40px;
+        padding: 8px 12px;
+        font-size: 0.76rem;
       }
     }
 
@@ -1428,8 +1453,7 @@
 </head>
 <body>
   <nav class="mode-tabs" aria-label="Lab mode">
-    <a class="mode-tab active" href="actual.html" aria-current="page">Flour Impact Lab</a>
-    <a class="mode-tab" href="actual2.html">Gravity Lab Simulator</a>
+    <a class="mode-tab active" href="index.html" aria-current="page">Flour Impact Lab</a>
   </nav>
   <a class="pdf-button" href="Flour_Impact_Lab_Problem_Set.html">Problem Set</a>
 
@@ -1520,10 +1544,12 @@
         </div>
 
         <p class="answer-line">Potential Energy = <span class="answer" id="reportAnswer"></span></p>
-        <p class="crater-line">Estimated crater diameter in the flour: <span id="reportCrater"></span></p>
 
         <div class="crater-preview report-crater-preview" id="craterPreview" aria-label="Top-down preview of the crater in the flour">
-          <p class="crater-preview-title">Possible crater from above</p>
+          <div class="crater-preview-header">
+            <p class="crater-preview-title">Possible crater from above</p>
+            <button class="button download-image-button" type="button" id="downloadCraterImage">Download Img/svg</button>
+          </div>
           <div class="crater-surface" id="craterSurface">
             <div class="flour-slap" aria-hidden="true"></div>
             <div class="crater-shape" id="craterShape"></div>
@@ -1664,12 +1690,8 @@
       return { mass, height, potentialEnergy, craterDiameter };
     }
 
-    function renderCraterPreview(craterPreview, craterSurface, craterShape, craterDiameter, extraClass = '', flourViewWidthMeters = 0.34) {
-      const craterClass = objectClass || 'ball';
-      const isReportPreview = extraClass.includes('report-crater-preview') || craterPreview.id === 'craterPreview';
-      const isCompactLivePreview = !isReportPreview && craterSurface.clientHeight <= 110;
+    function getCraterPreviewMetrics(craterClass, craterDiameter, surfaceWidth, surfaceHeight, isReportPreview = true, isCompactLivePreview = false, flourViewWidthMeters = 0.34) {
       const viewWidthMeters = isReportPreview ? 0.34 : flourViewWidthMeters;
-      const surfaceWidth = Math.max(1, craterSurface.clientWidth - 28);
       const objectMinimumSizes = {
         ball: isReportPreview ? 36 : isCompactLivePreview ? 48 : 58,
         potato: isReportPreview ? 44 : isCompactLivePreview ? 56 : 68,
@@ -1677,7 +1699,7 @@
       };
       const maxCraterSize = Math.min(
         surfaceWidth * (isReportPreview ? 0.46 : isCompactLivePreview ? 0.62 : 0.86),
-        craterSurface.clientHeight * (isReportPreview ? 0.8 : isCompactLivePreview ? 0.68 : 1.2)
+        surfaceHeight * (isReportPreview ? 0.8 : isCompactLivePreview ? 0.68 : 1.2)
       );
       const craterSize = Math.min(
         maxCraterSize,
@@ -1688,10 +1710,28 @@
       const slapHeight = craterSize * (isReportPreview ? 1.28 : isCompactLivePreview ? 1.32 : craterClass === 'can' ? 1.76 : 1.72);
       const craterDepth = 0.34 + (normalizedDiameter * 0.36);
 
-      craterPreview.style.setProperty('--crater-size', `${craterSize}px`);
-      craterPreview.style.setProperty('--slap-width', `${slapWidth}px`);
-      craterPreview.style.setProperty('--slap-height', `${slapHeight}px`);
-      craterPreview.style.setProperty('--crater-depth', craterDepth.toFixed(2));
+      return { craterSize, normalizedDiameter, slapWidth, slapHeight, craterDepth };
+    }
+
+    function renderCraterPreview(craterPreview, craterSurface, craterShape, craterDiameter, extraClass = '', flourViewWidthMeters = 0.34) {
+      const craterClass = objectClass || 'ball';
+      const isReportPreview = extraClass.includes('report-crater-preview') || craterPreview.id === 'craterPreview';
+      const isCompactLivePreview = !isReportPreview && craterSurface.clientHeight <= 110;
+      const surfaceWidth = Math.max(1, craterSurface.clientWidth - 28);
+      const metrics = getCraterPreviewMetrics(
+        craterClass,
+        craterDiameter,
+        surfaceWidth,
+        craterSurface.clientHeight,
+        isReportPreview,
+        isCompactLivePreview,
+        flourViewWidthMeters
+      );
+
+      craterPreview.style.setProperty('--crater-size', `${metrics.craterSize}px`);
+      craterPreview.style.setProperty('--slap-width', `${metrics.slapWidth}px`);
+      craterPreview.style.setProperty('--slap-height', `${metrics.slapHeight}px`);
+      craterPreview.style.setProperty('--crater-depth', metrics.craterDepth.toFixed(2));
       craterPreview.style.setProperty('--crater-rotation', craterClass === 'potato' ? '-10deg' : craterClass === 'can' ? '4deg' : '0deg');
       craterPreview.className = `crater-preview ${extraClass} ${craterClass}`.trim();
       craterShape.className = `crater-shape ${craterClass}`;
@@ -1705,6 +1745,76 @@
         craterDiameter,
         'report-crater-preview'
       );
+    }
+
+    function saveDownload(url, filename) {
+      const link = document.createElement('a');
+      link.download = filename;
+      link.href = url;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    }
+
+    function getPageStylesText() {
+      return Array.from(document.styleSheets)
+        .map((styleSheet) => {
+          try {
+            return Array.from(styleSheet.cssRules).map((rule) => rule.cssText).join('\n');
+          } catch (error) {
+            return '';
+          }
+        })
+        .join('\n');
+    }
+
+    function downloadCraterImage() {
+      const downloadButton = document.getElementById('downloadCraterImage');
+      const craterPreview = document.getElementById('craterPreview');
+      const previewRect = craterPreview.getBoundingClientRect();
+      const exportWidth = Math.ceil(previewRect.width);
+      const exportHeight = Math.ceil(previewRect.height);
+      const previewClone = craterPreview.cloneNode(true);
+      const cloneButton = previewClone.querySelector('#downloadCraterImage');
+      const title = previewClone.querySelector('.crater-preview-title');
+
+      if (cloneButton) cloneButton.remove();
+      if (title) {
+        title.style.width = '100%';
+        title.style.textAlign = 'center';
+      }
+
+      previewClone.removeAttribute('id');
+      previewClone.style.width = `${exportWidth}px`;
+      previewClone.style.height = `${exportHeight}px`;
+      previewClone.style.margin = '0';
+      previewClone.style.boxSizing = 'border-box';
+
+      const exportWrapper = document.createElement('section');
+      exportWrapper.className = 'report-card';
+      exportWrapper.style.padding = '0';
+      exportWrapper.style.margin = '0';
+      exportWrapper.style.width = `${exportWidth}px`;
+      exportWrapper.style.background = 'transparent';
+      exportWrapper.appendChild(previewClone);
+
+      const serializedPreview = new XMLSerializer().serializeToString(exportWrapper);
+      const svgMarkup =
+        `<svg xmlns="http://www.w3.org/2000/svg" width="${exportWidth}" height="${exportHeight}" viewBox="0 0 ${exportWidth} ${exportHeight}">` +
+        '<foreignObject width="100%" height="100%">' +
+        `<div xmlns="http://www.w3.org/1999/xhtml"><style>${getPageStylesText()}</style>${serializedPreview}</div>` +
+        '</foreignObject></svg>';
+      const { potentialEnergy } = getTrialResults();
+      const energyLabel = formatNumber(potentialEnergy).replace('.', '-');
+      const fileName = `possible-crater-${conditions.object.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${energyLabel}-j.svg`;
+      const svgUrl = URL.createObjectURL(new Blob([svgMarkup], { type: 'image/svg+xml;charset=utf-8' }));
+
+      saveDownload(svgUrl, fileName);
+      downloadButton.textContent = 'Downloaded';
+      window.setTimeout(() => {
+        URL.revokeObjectURL(svgUrl);
+        downloadButton.textContent = 'Download Img/svg';
+      }, 1200);
     }
 
     function showLiveCraterPreview() {
@@ -1803,7 +1913,6 @@
       document.getElementById('formulaMass').textContent = `${mass} kg`;
       document.getElementById('formulaHeight').textContent = `${height} m`;
       document.getElementById('reportAnswer').textContent = `${formatNumber(potentialEnergy)} J`;
-      document.getElementById('reportCrater').textContent = `${craterDiameter.toFixed(4)} m`;
       document.getElementById('reportOverlay').classList.add('show');
       updateReportCraterPreview(craterDiameter);
     }
@@ -1823,6 +1932,8 @@
     document.getElementById('reportChangeConditions').addEventListener('click', () => {
       window.location.href = 'index.html';
     });
+
+    document.getElementById('downloadCraterImage').addEventListener('click', downloadCraterImage);
   </script>
 </body>
 </html>
